@@ -1,0 +1,326 @@
+<meta name='viewport' content='width=device-width, initial-scale=1'/><!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ловля монеток</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+        
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background-color: #87CEEB;
+            overflow: hidden;
+        }
+        
+        .coin {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background-image: url('coin.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            cursor: pointer;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+        
+        #score-display {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 24px;
+            color: white;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 100;
+        }
+        
+        #time-display {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 24px;
+            color: white;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 100;
+        }
+        
+        #start-screen, #end-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            z-index: 200;
+        }
+        
+        button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 10px 2px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        
+        p {
+            font-size: 1.2em;
+            margin-bottom: 30px;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="score-display">Очки: 0</div>
+        <div id="time-display">Время: 60</div>
+        
+        <div id="start-screen">
+            <h1>Ловля монеток</h1>
+            <p>Нажимайте на падающие монетки, чтобы заработать очки!</p>
+            <p>У вас есть 1 минута. Удачи!</p>
+            <button id="start-button">Начать игру</button>
+        </div>
+        
+        <div id="end-screen" class="hidden">
+            <h1>Игра окончена!</h1>
+            <p id="final-score">Вы набрали: 0 очков</p>
+            <button id="restart-button">Играть снова</button>
+        </div>
+    </div>
+
+    <script>
+        // Конфигурация игры
+        const GAME_DURATION = 60; // 60 секунд
+        const COIN_SPAWN_INTERVAL = 500; // Монетка каждые 500мс
+        const COIN_FALL_SPEED = 3; // Скорость падения монеток
+        
+        // Элементы интерфейса
+        const gameContainer = document.getElementById('game-container');
+        const scoreDisplay = document.getElementById('score-display');
+        const timeDisplay = document.getElementById('time-display');
+        const startScreen = document.getElementById('start-screen');
+        const endScreen = document.getElementById('end-screen');
+        const finalScoreDisplay = document.getElementById('final-score');
+        const startButton = document.getElementById('start-button');
+        const restartButton = document.getElementById('restart-button');
+        
+        // Переменные игры
+        let score = 0;
+        let timeLeft = GAME_DURATION;
+        let gameInterval;
+        let coinInterval;
+        let isGameRunning = false;
+        let userData = {};
+        
+        // Инициализация Telegram WebApp
+        function initTelegramWebApp() {
+            if (window.Telegram && window.Telegram.WebApp) {
+                Telegram.WebApp.ready();
+                Telegram.WebApp.expand();
+                
+                // Получаем данные пользователя
+                userData = Telegram.WebApp.initDataUnsafe?.user || {};
+                
+                // Если пользователь не авторизован, можно показать кнопку авторизации
+                if (!userData.id) {
+                    const authButton = document.createElement('button');
+                    authButton.textContent = 'Авторизоваться через Telegram';
+                    authButton.onclick = () => {
+                        Telegram.WebApp.openTelegramLink('https://t.me/your_bot_username?start=webapp');
+                    };
+                    startScreen.insertBefore(authButton, startButton);
+                }
+            }
+        }
+        
+        // Начало игры
+        function startGame() {
+            if (isGameRunning) return;
+            
+            // Проверка авторизации (если требуется)
+            if (window.Telegram && window.Telegram.WebApp && !userData.id) {
+                alert('Пожалуйста, авторизуйтесь через Telegram для игры');
+                return;
+            }
+            
+            isGameRunning = true;
+            score = 0;
+            timeLeft = GAME_DURATION;
+            
+            // Очищаем поле от предыдущих монеток
+            document.querySelectorAll('.coin').forEach(coin => coin.remove());
+            
+            // Обновляем интерфейс
+            scoreDisplay.textContent = `Очки: ${score}`;
+            timeDisplay.textContent = `Время: ${timeLeft}`;
+            startScreen.classList.add('hidden');
+            endScreen.classList.add('hidden');
+            
+            // Запускаем игровые интервалы
+            gameInterval = setInterval(updateGame, 1000);
+            coinInterval = setInterval(spawnCoin, COIN_SPAWN_INTERVAL);
+        }
+        
+        // Обновление игрового состояния
+        function updateGame() {
+            timeLeft--;
+            timeDisplay.textContent = `Время: ${timeLeft}`;
+            
+            if (timeLeft <= 0) {
+                endGame();
+            }
+        }
+        
+        // Создание новой монетки
+        function spawnCoin() {
+            if (!isGameRunning) return;
+            
+            const coin = document.createElement('div');
+            coin.className = 'coin';
+            
+            // Случайная позиция по X
+            const maxX = gameContainer.clientWidth - 50;
+            const x = Math.floor(Math.random() * maxX);
+            
+            coin.style.left = `${x}px`;
+            coin.style.top = '-50px';
+            
+            // Обработчик клика по монетке
+            coin.onclick = () => {
+                if (!isGameRunning) return;
+                
+                score++;
+                scoreDisplay.textContent = `Очки: ${score}`;
+                coin.remove();
+            };
+            
+            gameContainer.appendChild(coin);
+            
+            // Анимация падения
+            let y = -50;
+            const fallInterval = setInterval(() => {
+                if (!isGameRunning) {
+                    clearInterval(fallInterval);
+                    return;
+                }
+                
+                y += COIN_FALL_SPEED;
+                coin.style.top = `${y}px`;
+                
+                // Удаление монетки, если она упала за пределы экрана
+                if (y > gameContainer.clientHeight) {
+                    clearInterval(fallInterval);
+                    coin.remove();
+                }
+            }, 20);
+        }
+        
+        // Завершение игры
+        function endGame() {
+            isGameRunning = false;
+            clearInterval(gameInterval);
+            clearInterval(coinInterval);
+            
+            // Показываем экран завершения
+            finalScoreDisplay.textContent = `Вы набрали: ${score} очков`;
+            endScreen.classList.remove('hidden');
+            
+            // Отправляем результаты на сервер (если пользователь авторизован)
+            if (window.Telegram && window.Telegram.WebApp && userData.id) {
+                sendResultsToBot(score);
+            }
+        }
+        
+        // Отправка результатов в бота
+        function sendResultsToBot(finalScore) {
+            // Здесь должна быть реализация отправки данных на ваш сервер
+            // Например, через fetch или Telegram WebApp.sendData()
+            
+            // Пример для WebApp.sendData():
+            if (Telegram.WebApp.sendData) {
+                const data = {
+                    userId: userData.id,
+                    score: finalScore,
+                    action: 'update_score'
+                };
+                Telegram.WebApp.sendData(JSON.stringify(data));
+            } else {
+                // Альтернативная реализация, если WebApp.sendData недоступен
+                fetch('https://your-bot-server.com/update-score', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        userId: userData.id,
+                        score: finalScore
+                    })
+                }).then(response => {
+                    console.log('Score updated successfully');
+                }).catch(error => {
+                    console.error('Error updating score:', error);
+                });
+            }
+        }
+        
+        // Обработчики кнопок
+        startButton.addEventListener('click', startGame);
+        restartButton.addEventListener('click', startGame);
+        
+        // Инициализация при загрузке
+        window.onload = function() {
+            initTelegramWebApp();
+            
+            // Для тестирования вне Telegram - можно раскомментировать
+            // startGame();
+        };
+        
+        // Обработка сообщений от Telegram (если используется)
+        window.addEventListener('message', function(event) {
+            if (event.data === 'web_app_close') {
+                // Действия при закрытии WebApp
+            }
+        });
+    </script>
+</body>
+</html>
