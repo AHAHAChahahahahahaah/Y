@@ -1,0 +1,455 @@
+<meta name='viewport' content='width=device-width, initial-scale=1'/><!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Адвент-календарь Ананас бота</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .calendar {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .day-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .day-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .day-number {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #ffcc00;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .day-name {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 10px;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .prize-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .prize-card {
+            background: linear-gradient(135deg, #2c3e50, #4a6491);
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .prize-image {
+            width: 100%;
+            height: 200px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .prize-image img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .prize-title {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .promo-code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .promo-code-text {
+            font-family: monospace;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+        }
+
+        .copy-btn {
+            background: #ffcc00;
+            color: #333;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        .copy-btn:hover {
+            background: #ffd633;
+        }
+
+        @media (max-width: 768px) {
+            .calendar {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Адвент-календарь Ананас бота</h1>
+            <p class="subtitle"><i class="fa-solid fa-snowman"></i> <i class="fa-solid fa-snowman"></i> <i class="fa-solid fa-snowman"></i></p>
+        </header>
+
+        <div class="calendar" id="calendar">
+            <!-- Календарь будет сгенерирован JavaScript -->
+        </div>
+    </div>
+
+    <div class="prize-container" id="prizeContainer">
+        <div class="prize-card">
+            <button class="close-btn" id="closeBtn">×</button>
+            <div class="prize-image" id="prizeImage">
+                <!-- Изображение будет загружено через JS -->
+            </div>
+            <h2 class="prize-title" id="prizeTitle"></h2>
+            <div class="promo-code">
+                <span class="promo-code-text" id="promoCodeText"></span>
+                <button class="copy-btn" id="copyBtn">Копировать</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ДАННЫЕ ДЛЯ КАЖДОГО ДНЯ - РЕДАКТИРУЙТЕ ЗДЕСЬ!
+        const prizesData = {
+            1: {
+                title: "Снеговик",
+                image: "https://emojio.ru/images/apple-b/2603-fe0f.png",
+                promoCode: "SNOWMAN10"
+            },
+            2: {
+                title: "Новогодняя ёлка",
+                image: "https://emojio.ru/images/apple-b/1f384.png",
+                promoCode: "TREE10"
+            },
+            3: {
+                title: "1000 🔅",
+                image: "https://emojio.ru/images/apple-b/1f505.png",
+                promoCode: "COIN1000"
+            },
+            4: {
+                title: "Подпишитесь на канал",
+                image: "https://emojio.ru/images/apple-b/1f34d.png",
+                promoCode: "@TG_AHAHAC"
+            },
+            5: {
+                title: "100 Ⓜ️",
+                image: "https://emojigraph.org/media/apple/circled-m_24c2-fe0f.png",
+                promoCode: "MARKET100"
+            },
+            6: {
+                title: "50 ⚜",
+                image: "https://emojio.ru/images/apple-b/269c-fe0f.png",
+                promoCode: "ANANAS50"
+            },
+            7: {
+                title: "1500 🔅",
+                image: "https://emojio.ru/images/apple-b/1f505.png",
+                promoCode: "FREECOIN"
+            },
+            8: {
+                title: "50 🔱",
+                image: "https://emojio.ru/images/apple-b/1f531.png",
+                promoCode: "BOOST50"
+            },
+            9: {
+                title: "Подпишитесь на канал",
+                image: "https://emojio.ru/images/apple-b/2603-fe0f.png",
+                promoCode: "@glypa_tg_both"
+            },
+            10: {
+                title: "5000 🔅",
+                image: "https://emojio.ru/images/apple-b/1f505.png",
+                promoCode: "MONEY5000"
+            },
+            11: {
+                title: "100000 🔅",
+                image: "https://emojio.ru/images/apple-b/1f505.png",
+                promoCode: "SUPER"
+            },
+            12: {
+                title: "Шампанское",
+                image: "https://emojio.ru/images/apple-b/1f942.png",
+                promoCode: "GLASS10"
+            },
+            13: {
+                title: "50 Ⓜ️",
+                image: "https://emojigraph.org/media/apple/circled-m_24c2-fe0f.png",
+                promoCode: "MCOIN50"
+            },
+            14: {
+                title: "Санки",
+                image: "https://emojio.ru/images/apple-b/1f6f7.png",
+                promoCode: "SLED10"
+            },
+            15: {
+                title: "1000 🏵",
+                image: "https://emojio.ru/images/apple-b/1f3f5.png",
+                promoCode: "FLOWER1000"
+            },
+            16: {
+                title: "Шампанское",
+                image: "https://emojio.ru/images/apple-b/1f37e.png",
+                promoCode: "BOTTLE10"
+            },
+            17: {
+                title: "Подарок",
+                image: "https://emojio.ru/images/apple-b/1f381.png",
+                promoCode: "GIFT10"
+            },
+            18: {
+                title: "Снежинка",
+                image: "https://emojio.ru/images/apple-b/2744-fe0f.png",
+                promoCode: "SNOW10"
+            },
+            19: {
+                title: "Подарите мне тг прем",
+                image: "https://emojio.ru/images/apple-b/1f34d.png",
+                promoCode: "@TG_AHAHAC"
+            },
+            20: {
+                title: "Скоро появится",
+                image: "https://emojio.ru/images/apple-b/274c.png",
+                promoCode: ""
+            },
+            21: {
+                title: "Скоро появится",
+                image: "https://emojio.ru/images/apple-b/274c.png",
+                promoCode: ""
+            },
+            22: {
+                title: "Скоро появится",
+                image: "https://emojio.ru/images/apple-b/274c.png",
+                promoCode: ""
+            },
+            23: {
+                title: "Скоро появится",
+                image: "https://emojio.ru/images/apple-b/274c.png",
+                promoCode: ""
+            },
+            24: {
+                title: "Скоро появится",
+                image: "https://emojio.ru/images/apple-b/274c.png",
+                promoCode: ""
+            },
+            25: {
+                title: "Скоро появится",
+                image: "https://emojio.ru/images/apple-b/274c.png",
+                promoCode: ""
+            },
+            26: {
+                title: "Скоро появится",
+                image: "https://emojio.ru/images/apple-b/274c.png",
+                promoCode: ""
+            },
+            27: {
+                title: "Скоро появится",
+                image: "https://emojio.ru/images/apple-b/274c.png",
+                promoCode: ""
+            },
+            28: {
+                title: "Скоро появится",
+                image: "https://emojio.ru/images/apple-b/274c.png",
+                promoCode: ""
+            },
+            29: {
+                title: "Скоро появится",
+                image: "https://emojio.ru/images/apple-b/274c.png",
+                promoCode: ""
+            },
+            30: {
+                title: "С наступающим 🎉",
+                image: "https://emojio.ru/images/apple-b/1f384.png",
+                promoCode: ""
+            },
+            31: {
+                title: "Новогодний миллион 🔅",
+                image: "https://emojio.ru/images/apple-b/1f389.png",
+                promoCode: "NEW2026"
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const calendar = document.getElementById('calendar');
+            const prizeContainer = document.getElementById('prizeContainer');
+            const closeBtn = document.getElementById('closeBtn');
+            const copyBtn = document.getElementById('copyBtn');
+            const prizeImage = document.getElementById('prizeImage');
+            const prizeTitle = document.getElementById('prizeTitle');
+            const promoCodeText = document.getElementById('promoCodeText');
+
+            // Создаем календарь на декабрь 2025
+            const daysInDecember = 31;
+            const startDay = 1; // 1 декабря 2025 - понедельник
+
+            for (let i = 1; i <= daysInDecember; i++) {
+                const dayCard = document.createElement('div');
+                dayCard.className = 'day-card';
+                dayCard.dataset.day = i;
+                
+                const dayNumber = document.createElement('div');
+                dayNumber.className = 'day-number';
+                dayNumber.textContent = i;
+                
+                const dayName = document.createElement('div');
+                dayName.className = 'day-name';
+                // Вычисляем день недели
+                const dayOfWeek = (startDay + i - 2) % 7;
+                const dayNames = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье'];
+                dayName.textContent = dayNames[dayOfWeek];
+                
+                dayCard.appendChild(dayNumber);
+                dayCard.appendChild(dayName);
+                
+                dayCard.addEventListener('click', function() {
+                    openPrizeCard(i);
+                });
+                
+                calendar.appendChild(dayCard);
+            }
+
+            // Открытие карточки приза
+            function openPrizeCard(day) {
+                const prize = prizesData[day];
+                if (prize) {
+                    prizeImage.innerHTML = `<img src="${prize.image}" alt="${prize.title}">`;
+                    prizeTitle.textContent = prize.title;
+                    promoCodeText.textContent = prize.promoCode;
+                    prizeContainer.style.display = 'flex';
+                }
+            }
+
+            // Закрытие карточки приза
+            closeBtn.addEventListener('click', function() {
+                prizeContainer.style.display = 'none';
+            });
+
+            // Копирование промокода
+            copyBtn.addEventListener('click', function() {
+                const textToCopy = promoCodeText.textContent;
+                navigator.clipboard.writeText(textToCopy).then(function() {
+                    copyBtn.textContent = 'Скопировано!';
+                    setTimeout(function() {
+                        copyBtn.textContent = 'Копировать';
+                    }, 2000);
+                });
+            });
+
+            // Закрытие по клику вне карточки
+            prizeContainer.addEventListener('click', function(e) {
+                if (e.target === prizeContainer) {
+                    prizeContainer.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
